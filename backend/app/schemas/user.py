@@ -1,16 +1,22 @@
-from dataclasses import Field
-
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from typing import Optional
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     email: EmailStr
+
+class UserCreate(UserBase):
     password: str
 
-class UserResponse(BaseModel):
+class UserSettingsUpdate(BaseModel):
+    pomodoro_focus: Optional[int] = None
+    pomodoro_short_break: Optional[int] = None
+    pomodoro_long_break: Optional[int] = None
+
+class UserResponse(UserBase):
     id: int
-    email: EmailStr
-    created_at: datetime
+    pomodoro_focus: int
+    pomodoro_short_break: int
+    pomodoro_long_break: int
 
     class Config:
         from_attributes = True

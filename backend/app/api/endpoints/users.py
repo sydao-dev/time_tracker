@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ...db import database, models
 from ...schemas import user as user_schemas
 from ...core import security
+from ..deps import get_current_user
 
 router = APIRouter()
 
@@ -25,3 +26,23 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(database.
     db.refresh(new_user)
 
     return new_user
+
+@router.get("/me", response_model=user_schemas.UserResponse)
+def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me/settings", response_model=user_schemas.UserResponse)
+def update_user_settings(
+        settings_update: user_schemas.UserSettingsUpdate,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    update_data = settings_update.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(current_user, key, value)
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user

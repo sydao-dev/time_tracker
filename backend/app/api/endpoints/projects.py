@@ -19,13 +19,19 @@ def create_project(
     db.refresh(new_project)
     return new_project
 
+
 @router.get("/", response_model=List[project_schemas.ProjectResponse])
 def get_projects(
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(get_current_user)
+        include_archived: bool = False,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(get_current_user)
 ):
-    projects = db.query(models.Project).filter(models.Project.user_id == current_user.id).all()
-    return projects
+    query = db.query(models.Project).filter(models.Project.user_id == current_user.id)
+
+    if not include_archived:
+        query = query.filter(models.Project.is_archived == False)
+
+    return query.all()
 
 
 @router.patch("/{project_id}", response_model=project_schemas.ProjectResponse)

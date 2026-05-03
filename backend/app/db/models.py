@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -41,11 +41,14 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     color = Column(String, default="#000000")
-    hourly_rate = Column(Float, default=0.0)  # <--- НОВЕ ПОЛЕ
+    hourly_rate = Column(Float, default=0.0)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    is_archived = Column(Boolean, default=False)
 
     owner = relationship("User", back_populates="projects")
     time_entries = relationship("TimeEntry", back_populates="project")
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
 
     client = relationship("Client", back_populates="projects")
 
@@ -59,6 +62,8 @@ class TimeEntry(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
+    is_archived = Column(Boolean, default=False)
+
     owner = relationship("User", back_populates="time_entries")
     project = relationship("Project", back_populates="time_entries")
 
@@ -70,11 +75,12 @@ class Client(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
-    email = Column(String, nullable=True)  # Контактний email замовника
+    email = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     owner = relationship("User", back_populates="clients")
     projects = relationship("Project", back_populates="client")
+
 
 class Tag(Base):
     __tablename__ = "tags"
